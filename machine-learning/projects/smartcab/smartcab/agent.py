@@ -12,7 +12,7 @@ class LearningAgent(Agent):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment 
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
-
+        
         # Set parameters of the learning agent
         self.learning = learning # Whether the agent is expected to learn
         self.Q = dict()          # Create a Q-table which will be a dictionary of tuples
@@ -23,6 +23,21 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
+        waypoint = ["forward", "left", "right"]
+        light = ['red', 'green']
+        oncoming = [None, "forward", "left", "right"]
+        left = [None, "forward", "left", "right"]
+        right = [None, "forward", "left", "right"]
+        action = [None, "forward", "left", "right"]
+
+        # Initialize our Q table with zeroes, values will update as it learns
+        for w in waypoint:
+            for li in light:
+                for o in oncoming:
+                    for le in left:
+                        for r in right:
+                            for a in action:
+                                self.Q_table[((w, li, o, le, r), a)] = 0        
 
 
     def reset(self, destination=None, testing=False):
@@ -60,7 +75,10 @@ class LearningAgent(Agent):
         #   If it is not, create a dictionary in the Q-table for the current 'state'
         #   For each action, set the Q-value for the state-action pair to 0
         
-        state = None
+        '''if self.learning:
+            if self.state not in self.Q:
+                self.Q.update(self.state)
+        '''
 
         return state
 
