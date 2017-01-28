@@ -23,7 +23,9 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
-        waypoint = ["forward", "left", "right"]
+        self.t = 0
+        
+        '''waypoint = ["forward", "left", "right"]
         light = ['red', 'green']
         oncoming = [None, "forward", "left", "right"]
         left = [None, "forward", "left", "right"]
@@ -31,14 +33,15 @@ class LearningAgent(Agent):
         action = [None, "forward", "left", "right"]
 
         # Initialize our Q table with zeroes, values will update as it learns
-        '''for w in waypoint:
+        for w in waypoint:
             for li in light:
                 for o in oncoming:
                     for le in left:
                         for r in right:
                             for a in action:
-                                self.Q_table[((w, li, o, le, r), a)] = 0        
+                                self.Q_table[((w, li, o, le, r), a)] = 0
         '''
+        
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -54,6 +57,12 @@ class LearningAgent(Agent):
         # Update epsilon using a decay function of your choice
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
+        self.t += 1
+        self.epsilon = 1/float(math.sqrt(self.t))
+
+        if testing:
+            self.epsilon=0
+            self.alpha=0
 
         return None
 
@@ -74,16 +83,15 @@ class LearningAgent(Agent):
         # When learning, check if the state is in the Q-table
         #   If it is not, create a dictionary in the Q-table for the current 'state'
         #   For each action, set the Q-value for the state-action pair to 0
-        
         '''if self.learning:
             if self.state not in self.Q:
                 self.Q.update(self.state)
-
-        state = (waypoint,inputs['light'],inputs['oncoming'],inputs['left'])
-        if not state in self.Q:
-            self.Q[state]={key: 0 for key in self.valid_actions}
         '''
-        return None
+        state = (waypoint, inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'])
+        if not state in self.Q:
+            self.Q[state]={key: 1 for key in self.valid_actions}
+        
+        return state
 
 
     def get_maxQ(self, state):
@@ -95,8 +103,8 @@ class LearningAgent(Agent):
         ###########
         # Calculate the maximum Q-value of all actions for a given state
 
-        maxQ = None
-        #maxQ = max(self.Q[state].values())
+        #maxQ = None
+        maxQ = max(self.Q[state].values())
 
         return maxQ 
 
@@ -110,7 +118,9 @@ class LearningAgent(Agent):
         # When learning, check if the 'state' is not in the Q-table
         # If it is not, create a new dictionary for that state
         #   Then, for each action available, set the initial Q-value to 0.0
-
+        if not state in self.Q:
+            self.Q[state]={key: 0 for key in self.valid_actions}
+        
         return
 
 
@@ -129,6 +139,15 @@ class LearningAgent(Agent):
         # When not learning, choose a random action
         # When learning, choose a random action with 'epsilon' probability
         #   Otherwise, choose an action with the highest Q-value for the current state
+        if not self.learning:
+            action = random.choice(self.valid_actions)
+        else:
+            if random.uniform(0, 1) < self.epsilon:
+                action = random.choice(self.valid_actions)
+            else:
+                optQ = self.get_maxQ(state)
+                states_optQ = [ k for k in self.Q[state].keys() if self.Q[state][k] == optQ ]
+                action = random.choice(states_optQ)
  
         return action
 
@@ -143,6 +162,8 @@ class LearningAgent(Agent):
         ###########
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
+        if self.learning:
+            self.Q[state][action] += self.alpha*(reward-self.Q[state][action])
 
         return
 
@@ -179,7 +200,7 @@ def run():
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent)
+    agent = env.create_agent(LearningAgent, learning=True)
     
     ##############
     # Follow the driving agent
@@ -195,7 +216,7 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=0.01, log_metrics=True)
+    sim = Simulator(env, update_delay=0.41, log_metrics=True, display=False)
     
     ##############
     # Run the simulator

@@ -189,8 +189,8 @@ def plot_trials(csv):
 	ax = plt.subplot2grid((6,6), (4,4), colspan=2, rowspan=2)
 	ax.axis('off')
 
-	if len(data) > 0:
-		safety_rating, safety_color = calculate_safety(data)
+	if len(testing_data) > 0:
+		safety_rating, safety_color = calculate_safety(testing_data)
 		reliability_rating, reliability_color = calculate_reliability(data)
 
 		# Write success rate
