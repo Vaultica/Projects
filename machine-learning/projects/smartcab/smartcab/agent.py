@@ -25,23 +25,6 @@ class LearningAgent(Agent):
         # Set any additional class parameters as needed
         self.t = 0
         
-        '''waypoint = ["forward", "left", "right"]
-        light = ['red', 'green']
-        oncoming = [None, "forward", "left", "right"]
-        left = [None, "forward", "left", "right"]
-        right = [None, "forward", "left", "right"]
-        action = [None, "forward", "left", "right"]
-
-        # Initialize our Q table with zeroes, values will update as it learns
-        for w in waypoint:
-            for li in light:
-                for o in oncoming:
-                    for le in left:
-                        for r in right:
-                            for a in action:
-                                self.Q_table[((w, li, o, le, r), a)] = 0
-        '''
-        
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -59,6 +42,7 @@ class LearningAgent(Agent):
         # If 'testing' is True, set epsilon and alpha to 0
         self.t += 1
         self.epsilon = 1/float(math.sqrt(self.t))
+        #self.epsilon = self.epsilon - 0.05
 
         if testing:
             self.epsilon=0
@@ -74,7 +58,7 @@ class LearningAgent(Agent):
         # Collect data about the environment
         waypoint = self.planner.next_waypoint() # The next waypoint 
         inputs = self.env.sense(self)           # Visual input - intersection light and traffic
-        deadline = self.env.get_deadline(self)  # Remaining deadline
+        #deadline = self.env.get_deadline(self)  # Remaining deadline
 
         ########### 
         ## TO DO ##
@@ -82,14 +66,10 @@ class LearningAgent(Agent):
         # Set 'state' as a tuple of relevant data for the agent
         # When learning, check if the state is in the Q-table
         #   If it is not, create a dictionary in the Q-table for the current 'state'
-        #   For each action, set the Q-value for the state-action pair to 0
-        '''if self.learning:
-            if self.state not in self.Q:
-                self.Q.update(self.state)
-        '''
+        #   For each action, set the Q-value for the state-action pair to 0        
         state = (waypoint, inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'])
         if not state in self.Q:
-            self.Q[state]={key: 1 for key in self.valid_actions}
+            self.Q[state]= {key: 0 for key in self.valid_actions}
         
         return state
 
@@ -118,8 +98,8 @@ class LearningAgent(Agent):
         # When learning, check if the 'state' is not in the Q-table
         # If it is not, create a new dictionary for that state
         #   Then, for each action available, set the initial Q-value to 0.0
-        if not state in self.Q:
-            self.Q[state]={key: 0 for key in self.valid_actions}
+        if self.learning and not state in self.Q:
+                self.Q[state]={key: 0 for key in self.valid_actions}
         
         return
 
@@ -207,7 +187,7 @@ def run():
     # Flags:
     #   enforce_deadline - set to True to enforce a deadline metric
     #env.set_primary_agent(agent)
-    env.set_primary_agent(agent, enforce_deadline = True)
+    env.set_primary_agent(agent, enforce_deadline=True)
 
     ##############
     # Create the simulation
@@ -216,14 +196,14 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, update_delay=0.41, log_metrics=True, display=False)
+    sim = Simulator(env, update_delay=0.1, log_metrics=True, display=False, optimized=True)
     
     ##############
     # Run the simulator
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05 
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(n_test=10)
+    sim.run(n_test=50)
 
 
 if __name__ == '__main__':
