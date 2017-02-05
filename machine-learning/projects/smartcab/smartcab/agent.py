@@ -23,7 +23,8 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
-        self.t = 0
+        #self.t = 0
+        self.trial_count = 0
         self.a = 0.6
         
 
@@ -41,10 +42,12 @@ class LearningAgent(Agent):
         # Update epsilon using a decay function of your choice
         # Update additional class parameters as needed
         # If 'testing' is True, set epsilon and alpha to 0
-        self.t += 1
-
+        #self.t += 1
         self.epsilon = float(200/math.pow(self.t, 2))
         #self.epsilon = self.epsilon - 0.002
+        
+        #self.trial_count = self.trial_count + 1
+        #self.epsilon = 1 - (1/(1+math.exp(-0.2*self.alpha*(self.trial_count-t0))))
 
         if testing:
             self.epsilon=0
